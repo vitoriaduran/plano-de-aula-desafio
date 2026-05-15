@@ -4,7 +4,7 @@ from .models import db
 from .rotas import plano_aula_bp
 from .rotas.ai import ai_bp
 
-def crate_app():
+def create_app():
     app = Flask(__name__)
     CORS(app)
     app.config.from_object('config.Config')

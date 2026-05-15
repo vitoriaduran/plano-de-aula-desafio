@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
@@ -21,8 +21,8 @@ class PlanoAula(db.Model):
     ementa = db.Column(db.Text, nullable = False)
     conteudos = db.Column(db.Text)
     recursos = db.Column(db.Text)
-    data_prevista = db.Column(db.String(20))
-    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    data_prevista = db.Column(db.Date, nullable=True)
+    data_criacao = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     #cria a conexao entre as tabelas
     tags = db.relationship('Tag', secondary=plano_tags, backref=db.backref('planos', lazy='dynamic'))
@@ -36,7 +36,7 @@ class PlanoAula(db.Model):
             "objetivo": self.objetivo,
             "ementa": self.ementa,
             "conteudos": self.conteudos,
-            "recursos": self.conteudos,
+            "recursos": self.recursos,
             "data_prevista": self.data_prevista,
             "tags":[t.nome for t in self.tags]
         }

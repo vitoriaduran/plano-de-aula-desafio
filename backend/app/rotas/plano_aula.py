@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify
 from ..models import db, PlanoAula, Tag
 
@@ -17,7 +16,11 @@ def get_or_create_tag(nome_tag):
 #CRIAR
 @plano_aula_bp.route('', methods=['POST'])
 def criar():
-    dados = request.json
+    dados = request.get_json()
+
+    if not dados or not dados.get('titulo') or not dados.get('disciplina'):
+        return jsonify({"erro": "titulo e disciplina são obrigatórios"}), 400
+    
     try:
         novo = PlanoAula(
             titulo = dados['titulo'],
@@ -43,8 +46,29 @@ def criar():
 #LISTAR
 @plano_aula_bp.route('', methods=['GET'])
 def listar():
-    planos = PlanoAula.query.all()
-    return jsonify([p.to_dict() for p in planos]), 200
+    disciplina = request.args.get('disciplina')
+    tag = request.args.get('tag')
+    busca = request.args.get('busca')      
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    query = PlanoAula.query
+
+    if disciplina:
+        query = query.filter(PlanoAula.disciplina.ilike(f'%{disciplina}%'))
+    if busca:
+        query = query.filter(PlanoAula.titulo.ilike(f'%{busca}%'))
+    if tag:
+        query = query.join(PlanoAula.tags).filter(Tag.nome.ilike(f'%{tag}%'))
+
+    paginado = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        "dados": [p.to_dict() for p in paginado.items],
+        "total": paginado.total,
+        "pagina": paginado.page,
+        "total_paginas": paginado.pages
+    }), 200
 
 #BUSCAR
 @plano_aula_bp.route('/<int:id>', methods=['GET'])
@@ -62,7 +86,7 @@ def editar(id):
     plano.disciplina =  dados.get('disciplina', plano.disciplina)
     plano.objetivo = dados.get('objetivo', plano.objetivo)
     plano.ementa = dados.get('ementa',plano.ementa)
-    plano.conteudos = dados.get('conteudo', plano.conteudos)
+    plano.conteudos = dados.get('conteudos', plano.conteudos)
     plano.recursos = dados.get('recursos', plano.recursos)
     plano.data_prevista = dados.get('data_prevista', plano.data_prevista)
 
@@ -80,4 +104,4 @@ def deletar(id):
     plano = PlanoAula.query.get_or_404(id)
     db.session.delete(plano)
     db.session.commit()
-    return jsonify({"mensagem":"Removido com sucesso"}), 200
+    return '', 204

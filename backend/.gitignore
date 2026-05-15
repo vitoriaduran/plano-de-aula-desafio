@@ -1,0 +1,22 @@
+
+.env
+.env.*
+
+#Banco de dados
+*.db
+*.sqlite
+instance/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# editores
+# Configurações do seu VSCode
+.vscode/
+
+#log
+*.log
