@@ -24,7 +24,7 @@ def get_or_create_tag(nome_tag):
         return tag
 
 #CRIAR
-@plano_aula_bp.route('', methods=['POST'])
+@plano_aula_bp.route('/planos', methods=['POST'])
 def criar():
     dados = request.get_json()
 
@@ -56,7 +56,7 @@ def criar():
         return jsonify({"erro": str(e)}), 400
     
 #LISTAR
-@plano_aula_bp.route('', methods=['GET'])
+@plano_aula_bp.route('/planos', methods=['GET'])
 def listar():
     disciplina = request.args.get('disciplina')
     tag = request.args.get('tag')
