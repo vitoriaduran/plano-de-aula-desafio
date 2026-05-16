@@ -4,7 +4,7 @@ from ..servicos.ia_servicos import IAServico
 ai_bp = Blueprint('ai', __name__)
 ia_servico = IAServico()
 
-@ai_bp.route('/gerar', methods=['POST'])
+@ai_bp.route('/ai/gerar', methods=['POST'])
 def gerar():
     dados = request.get_json()
     titulo = dados.get('titulo')
