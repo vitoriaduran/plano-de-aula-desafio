@@ -2,7 +2,16 @@ from groq import Groq
 import os
 import json
 import re
+import logging
+import time
 from dotenv import load_dotenv
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(levelname)s] %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class IAServico:
     def __init__(self):
@@ -33,6 +42,7 @@ class IAServico:
             "tags": ["tag1", "tag2", "tag3"]
         }}
         """
+        inicio = time.time()
 
         try:
             response = self.client.chat.completions.create(
@@ -45,9 +55,17 @@ class IAServico:
                 ]
             )
 
-            texto = response.choices[0].message.content
-            texto_limpo = re.sub(r"```(?:json)?", "", texto)
+            latencia = round(time.time() - inicio, 2)
+            tokens = response.usage.total_tokens if response.usage else "N/A"
 
+            logger.info(
+                f'AI Request: Title="{titulo}", Discipline="{disciplina}", '
+                f'TokenUsage={tokens}, Latency={latencia}s'
+            )
+
+            texto = response.choices[0].message.content
+
+            texto_limpo = re.sub(r"```(?:json)?", "", texto)
             texto_limpo = texto_limpo.replace("```", "").strip()
 
             try:

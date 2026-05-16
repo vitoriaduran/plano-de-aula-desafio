@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from ..models import db, PlanoAula, Tag
 from datetime import date
-
+from sqlalchemy import asc, desc
+ 
 plano_aula_bp = Blueprint('plano_aula', __name__)
 
 #funcao para nao repitir tags
@@ -15,11 +16,12 @@ def converter_data(valor):
     
 def get_or_create_tag(nome_tag):
     nome = nome_tag.strip().lower()
-    tag = Tag.query.filter_by(nome=nome).first()
-    if not tag:
-        tag = Tag(nome=nome)
-        db.session.add(tag)
-    return tag
+    with db.session.no_autoflush:
+        tag = Tag.query.filter_by(nome=nome).first()
+        if not tag:
+            tag = Tag(nome=nome)
+            db.session.add(tag)
+        return tag
 
 #CRIAR
 @plano_aula_bp.route('', methods=['POST'])
@@ -58,18 +60,35 @@ def criar():
 def listar():
     disciplina = request.args.get('disciplina')
     tag = request.args.get('tag')
-    busca = request.args.get('busca')      
+    busca = request.args.get('busca')
+    data_prevista = request.args.get('data_prevista')       
+    order_by = request.args.get('order_by', 'data_criacao') 
+    order_dir = request.args.get('order_dir', 'desc')        
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
     query = PlanoAula.query
 
+    #filtros
     if disciplina:
         query = query.filter(PlanoAula.disciplina.ilike(f'%{disciplina}%'))
     if busca:
         query = query.filter(PlanoAula.titulo.ilike(f'%{busca}%'))
     if tag:
         query = query.join(PlanoAula.tags).filter(Tag.nome.ilike(f'%{tag}%'))
+    if data_prevista:
+        data_convertida = converter_data(data_prevista)
+        query = query.filter(PlanoAula.data_prevista == data_convertida)
+    
+    #ordenar
+    colunas_permitidas ={
+        'titulo':PlanoAula.titulo,
+        'data_criacao': PlanoAula.data_criacao,
+        'data_prevista': PlanoAula.data_prevista,
+    }
+    coluna = colunas_permitidas.get(order_by, PlanoAula.data_criacao)
+    ordem = asc(coluna) if order_dir == 'asc' else desc(coluna)
+    query = query.order_by(ordem)
 
     paginado = query.paginate(page=page, per_page=per_page, error_out=False)
 
@@ -98,7 +117,7 @@ def editar(id):
     plano.ementa = dados.get('ementa',plano.ementa)
     plano.conteudos = dados.get('conteudos', plano.conteudos)
     plano.recursos = dados.get('recursos', plano.recursos)
-    plano.data_prevista = dados.get('data_prevista', plano.data_prevista)
+    plano.data_prevista = converter_data(dados.get('data_prevista'))
 
     if 'tags' in dados:
         plano.tags = []

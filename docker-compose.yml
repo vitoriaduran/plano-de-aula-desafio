@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend      
+      dockerfile: Dockerfile
+    container_name: planoedu-backend
+    restart: unless-stopped
+
+    # Lê a variável do .env (chave da api)
+    env_file:
+      - ./backend/.env
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - ./backend/instance:/app/instance
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/planos')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
