@@ -12,9 +12,9 @@ def create_app():
     db.init_app(app)
 
     #registrar as rotas blueprint
-    app.register_blueprint(plano_aula_bp, url_prefix='/api/planos')
-    app.register_blueprint(ai_bp, url_prefix='/api/ai')
-
+    app.register_blueprint(plano_aula_bp, url_prefix='/api')
+    app.register_blueprint(ai_bp, url_prefix='/api')
+    
     @app.route('/')
     def home():
         return render_template('index.html')
