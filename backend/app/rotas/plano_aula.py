@@ -100,13 +100,13 @@ def listar():
     }), 200
 
 #BUSCAR
-@plano_aula_bp.route('/<int:id>', methods=['GET'])
+@plano_aula_bp.route('/planos/<int:id>', methods=['GET'])
 def buscar(id):
     plano = PlanoAula.query.get_or_404(id)
     return jsonify(plano.to_dict()),200
 
 #EDITAR
-@plano_aula_bp.route('/<int:id>', methods=['PUT'])
+@plano_aula_bp.route('/planos/<int:id>', methods=['PUT'])
 def editar(id):
     plano = PlanoAula.query.get_or_404(id)
     dados = request.json
@@ -128,7 +128,7 @@ def editar(id):
 
 #DELETAR
 
-@plano_aula_bp.route('/<int:id>', methods=['DELETE'])
+@plano_aula_bp.route('/planos/<int:id>', methods=['DELETE'])
 def deletar(id):
     plano = PlanoAula.query.get_or_404(id)
     db.session.delete(plano)
