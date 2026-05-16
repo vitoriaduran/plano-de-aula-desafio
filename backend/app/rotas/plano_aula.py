@@ -1,10 +1,18 @@
 from flask import Blueprint, request, jsonify
 from ..models import db, PlanoAula, Tag
+from datetime import date
 
 plano_aula_bp = Blueprint('plano_aula', __name__)
 
 #funcao para nao repitir tags
-
+def converter_data(valor):
+    if not valor:
+        return None
+    try:
+        return date.fromisoformat(str(valor))
+    except(ValueError, TypeError):
+        return None
+    
 def get_or_create_tag(nome_tag):
     nome = nome_tag.strip().lower()
     tag = Tag.query.filter_by(nome=nome).first()
@@ -29,7 +37,7 @@ def criar():
             ementa = dados.get('ementa',''),
             conteudos = dados.get('conteudos',''),
             recursos = dados.get('recursos',''),
-            data_prevista = dados.get('data_prevista','')
+            data_prevista = converter_data(dados.get('data_prevista')) 
         )
 
         for t in dados.get('tags', []):
@@ -41,6 +49,8 @@ def criar():
     
     except Exception as e:
         db.session.rollback() #se algo der errado, ele cancela tudo
+        print("ERRO AO SALVAR:")
+        print(str(e))
         return jsonify({"erro": str(e)}), 400
     
 #LISTAR

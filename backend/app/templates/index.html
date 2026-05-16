@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlanoEdu | Gerenciador de Aulas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --ai: #7c3aed;
+            --ai-hover: #6d28d9;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+        header h1 span { color: var(--primary); }
+
+        .card {
+            background: var(--card);
+            padding: 22px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* FORMULARIO*/
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+        input, textarea, select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--bg);
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        textarea { height: 85px; resize: vertical; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* BOTOES */
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-ai { background: var(--ai); color: white; width: 100%; justify-content: center; margin-bottom: 18px; padding: 11px; }
+        .btn-ai:hover { background: var(--ai-hover); }
+        .btn-ai:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-edit { background: #f1f5f9; color: var(--text); font-size: 0.8rem; padding: 6px 12px; }
+        .btn-edit:hover { background: #e2e8f0; }
+
+        .btn-delete { background: #fef2f2; color: var(--danger); font-size: 0.8rem; padding: 6px 12px; }
+        .btn-delete:hover { background: #fee2e2; }
+
+        .btn-cancel { background: #f1f5f9; color: var(--text-muted); }
+        .btn-cancel:hover { background: #e2e8f0; }
+
+        .btn-save-edit { background: var(--primary); color: white; }
+        .btn-save-edit:hover { background: var(--primary-hover); }
+
+        /* STATUS */
+        #status {
+            padding: 11px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: none;
+            border: 1px solid transparent;
+        }
+        #status.success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; display: block; }
+        #status.error { background: #fef2f2; color: #991b1b; border-color: #fecaca; display: block; }
+
+        /* FILTROS */
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+            align-items: flex-end;
+        }
+        .filters input, .filters select { margin: 0; }
+        .filter-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .list-header h3 { font-size: 1rem; font-weight: 600; }
+        .list-count { font-size: 0.8rem; color: var(--text-muted); background: #f1f5f9; padding: 3px 10px; border-radius: 20px; }
+
+        .plan-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            transition: box-shadow 0.2s;
+        }
+        .plan-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        .plan-info { flex: 1; min-width: 0; }
+        .plan-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .plan-discipline { font-size: 0.8rem; color: var(--primary); font-weight: 500; margin-bottom: 6px; }
+        .plan-objetivo { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+
+        .tags-row { display: flex; flex-wrap: wrap; gap: 5px; }
+        .tag {
+            background: #ede9fe;
+            color: #5b21b6;
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+
+        .plan-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 20px;
+        }
+        .page-btn {
+            width: 34px; height: 34px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .page-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-info { font-size: 0.8rem; color: var(--text-muted); padding: 0 6px; }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            display: none;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: slideUp 0.2s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { font-size: 1.05rem; font-weight: 700; }
+        .modal-close {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.3rem; color: var(--text-muted); line-height: 1;
+            padding: 4px;
+        }
+        .modal-close:hover { color: var(--text); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+        .empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--text-light);
+        }
+        .empty-state-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.9rem; }
+
+        .ai-loading-text {
+            display: none;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 14px;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .filters { grid-template-columns: 1fr; }
+            .plan-item { flex-direction: column; }
+            .plan-actions { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>📚 Plano<span>Edu</span></h1>
+        <span style="font-size:0.82rem;color:var(--text-muted)">Sistema de Gerenciamento de Aulas</span>
+    </header>
+
+    <div id="status"></div>
+
+    <!-- GERAR COM IA -->
+    <div class="card">
+        <h3>✨ Smart Assist — Gerar com IA</h3>
+        <div class="form-row">
+            <div class="form-group" style="margin-bottom:0">
+                <label>Título da Aula *</label>
+                <input type="text" id="ai-titulo" placeholder="Ex: Introdução ao Python">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+                <label>Disciplina *</label>
+                <input type="text" id="ai-disciplina" placeholder="Ex: Programação">
+            </div>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+            <label>Ementa (opcional — melhora as sugestões)</label>
+            <input type="text" id="ai-ementa" placeholder="Ex: Fundamentos da linguagem, variáveis e estruturas de controle">
+        </div>
+        <button class="btn btn-ai" id="btn-gerar" onclick="gerarComIA()">
+            🪄 Gerar Sugestões com IA
+        </button>
+        <p class="ai-loading-text" id="ai-loading-text">⏳ O assistente pedagógico está pensando... isso pode levar alguns segundos.</p>
+    </div>
+
+    <!--FORMULÁRIO DE CADASTRO -->
+    <div class="card">
+        <h3>📝 Detalhes do Plano</h3>
+        <div class="form-group">
+            <label>Objetivo</label>
+            <textarea id="f-objetivo" placeholder="O que o aluno será capaz de fazer após esta aula?"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Conteúdos</label>
+            <textarea id="f-conteudo" placeholder="Tópicos e conteúdos que serão abordados..."></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Recursos de Apoio</label>
+                <input type="text" id="f-recursos" placeholder="Livros, vídeos, links...">
+            </div>
+            <div class="form-group">
+                <label>Data Prevista</label>
+                <input type="date" id="f-data">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Tags (separadas por vírgula)</label>
+            <input type="text" id="f-tags" placeholder="python, basico, programacao">
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="salvarPlano()">💾 Salvar Plano de Aula</button>
+        </div>
+    </div>
+
+    <!-- LISTA DE PLANOS -->
+    <div class="list-header">
+        <h3>📋 Planos Salvos</h3>
+        <span class="list-count" id="total-count">...</span>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters">
+        <div>
+            <span class="filter-label">Buscar por título</span>
+            <input type="text" id="filter-busca" placeholder="Digite para buscar..." oninput="debounceCarregar()">
+        </div>
+        <div>
+            <span class="filter-label">Disciplina</span>
+            <input type="text" id="filter-disciplina" placeholder="Filtrar..." oninput="debounceCarregar()">
+        </div>
+        <div>
+            <span class="filter-label">Tag</span>
+            <input type="text" id="filter-tag" placeholder="Filtrar por tag..." oninput="debounceCarregar()">
+        </div>
+    </div>
+
+    <div id="lista-planos"></div>
+    <div class="pagination" id="paginacao"></div>
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="modal-overlay" id="modal-editar">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>✏️ Editar Plano de Aula</h3>
+            <button class="modal-close" onclick="fecharModal()">×</button>
+        </div>
+
+        <input type="hidden" id="edit-id">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Título *</label>
+                <input type="text" id="edit-titulo">
+            </div>
+            <div class="form-group">
+                <label>Disciplina *</label>
+                <input type="text" id="edit-disciplina">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Ementa</label>
+            <input type="text" id="edit-ementa">
+        </div>
+        <div class="form-group">
+            <label>Objetivo</label>
+            <textarea id="edit-objetivo"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Conteúdos</label>
+            <textarea id="edit-conteudo"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Recursos de Apoio</label>
+                <input type="text" id="edit-recursos">
+            </div>
+            <div class="form-group">
+                <label>Data Prevista</label>
+                <input type="date" id="edit-data">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Tags (separadas por vírgula)</label>
+            <input type="text" id="edit-tags">
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="fecharModal()">Cancelar</button>
+            <button class="btn btn-save-edit" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://localhost:5000/api";
+    let paginaAtual = 1;
+    let debounceTimer = null;
+
+   //gear com ia
+    async function gerarComIA() {
+        const titulo = document.getElementById('ai-titulo').value.trim();
+        const disciplina = document.getElementById('ai-disciplina').value.trim();
+        const ementa = document.getElementById('ai-ementa').value.trim();
+
+        if (!titulo || !disciplina) {
+            showStatus("Preencha o Título e a Disciplina para gerar sugestões.", "error");
+            return;
+        }
+
+        const btn = document.getElementById('btn-gerar');
+        const loadingText = document.getElementById('ai-loading-text');
+
+        btn.disabled = true;
+        btn.innerText = "⌛ Gerando sugestões...";
+        loadingText.style.display = "block";
+
+        try {
+            const response = await fetch(`${API_URL}/ai/gerar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo, disciplina, ementa })
+            });
+
+            // ✅ Verifica se a resposta foi erro HTTP
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.erro || `Erro ${response.status} na IA`);
+            }
+
+            const dados = await response.json();
+            const s = dados.sugestao;
+
+            // Preenche o formulário com as sugestões
+            document.getElementById('f-objetivo').value = s.objetivo || '';
+            document.getElementById('f-conteudo').value = s.conteudos || '';
+            document.getElementById('f-recursos').value = s.recursos || '';
+            document.getElementById('f-tags').value = Array.isArray(s.tags) ? s.tags.join(', ') : '';
+
+            showStatus("✅ Sugestão gerada! Revise os campos e salve.", "success");
+
+        } catch (e) {
+            showStatus("❌ Erro ao chamar a IA: " + e.message, "error");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "🪄 Gerar Sugestões com IA";
+            loadingText.style.display = "none";
+        }
+    }
+
+    // CRIAR 
+    async function salvarPlano() {
+        const titulo = document.getElementById('ai-titulo').value.trim();
+        const disciplina = document.getElementById('ai-disciplina').value.trim();
+
+        if (!titulo || !disciplina) {
+            showStatus("Título e Disciplina são obrigatórios para salvar.", "error");
+            return;
+        }
+
+        const plano = {
+            titulo,
+            disciplina,
+            ementa: document.getElementById('ai-ementa').value.trim() || "Gerado pela IA",
+            objetivo: document.getElementById('f-objetivo').value.trim(),
+            conteudos: document.getElementById('f-conteudo').value.trim(),
+            recursos: document.getElementById('f-recursos').value.trim(),
+            data_prevista: document.getElementById('f-data').value || null, // ✅ null, não ''
+            tags: document.getElementById('f-tags').value
+                .split(',').map(t => t.trim()).filter(t => t !== '')
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/planos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(plano)
+            });
+
+            //detectar erros backend
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.erro || `Erro ${res.status}`);
+            }
+
+            showStatus("✅ Plano salvo com sucesso!", "success");
+            limparFormulario();
+            carregarPlanos(1);
+
+        } catch (e) {
+            showStatus("❌ Erro ao salvar: " + e.message, "error");
+        }
+    }
+
+    // LISTAR — com filtros e paginação
+    async function carregarPlanos(page = paginaAtual) {
+        paginaAtual = page;
+
+        const busca = document.getElementById('filter-busca').value.trim();
+        const disciplina = document.getElementById('filter-disciplina').value.trim();
+        const tag = document.getElementById('filter-tag').value.trim();
+
+        const params = new URLSearchParams({ page, per_page: 8 });
+        if (busca) params.append('busca', busca);
+        if (disciplina) params.append('disciplina', disciplina);
+        if (tag) params.append('tag', tag);
+
+        const lista = document.getElementById('lista-planos');
+        lista.innerHTML = `<div class="empty-state"><p>Carregando...</p></div>`;
+
+        try {
+            const res = await fetch(`${API_URL}/planos?${params}`);
+            if (!res.ok) throw new Error("Falha ao buscar planos");
+            const data = await res.json();
+
+            document.getElementById('total-count').textContent =
+                `${data.total} plano${data.total !== 1 ? 's' : ''}`;
+
+            renderizarLista(data.dados);
+            renderizarPaginacao(data.pagina, data.total_paginas);
+
+        } catch (e) {
+            lista.innerHTML = `<div class="empty-state"><p style="color:#dc2626">Erro ao carregar: ${e.message}</p></div>`;
+        }
+    }
+
+    function renderizarLista(planos) {
+        const lista = document.getElementById('lista-planos');
+
+        if (!planos || planos.length === 0) {
+            lista.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>Nenhum plano encontrado.<br>Crie o primeiro acima!</p>
+                </div>`;
+            return;
+        }
+
+        lista.innerHTML = planos.map(p => `
+            <div class="plan-item">
+                <div class="plan-info">
+                    <div class="plan-title">${escapar(p.titulo)}</div>
+                    <div class="plan-discipline">📚 ${escapar(p.disciplina)}</div>
+                    ${p.objetivo ? `<div class="plan-objetivo">${escapar(p.objetivo).substring(0, 100)}${p.objetivo.length > 100 ? '...' : ''}</div>` : ''}
+                    ${p.tags && p.tags.length > 0 ? `
+                        <div class="tags-row">
+                            ${p.tags.map(t => `<span class="tag">#${escapar(t)}</span>`).join('')}
+                        </div>` : ''}
+                    ${p.data_prevista ? `<div style="font-size:0.78rem;color:var(--text-light);margin-top:6px">📅 ${formatarData(p.data_prevista)}</div>` : ''}
+                </div>
+                <div class="plan-actions">
+                    <button class="btn btn-edit" onclick="abrirEdicao(${p.id})">✏️ Editar</button>
+                    <button class="btn btn-delete" onclick="deletarPlano(${p.id}, '${escapar(p.titulo)}')">🗑️ Excluir</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderizarPaginacao(paginaAtual, totalPaginas) {
+        const el = document.getElementById('paginacao');
+        if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+
+        let html = `
+            <button class="page-btn" onclick="carregarPlanos(${paginaAtual - 1})"
+                ${paginaAtual === 1 ? 'disabled' : ''}>‹</button>`;
+
+        for (let p = 1; p <= totalPaginas; p++) {
+            html += `<button class="page-btn ${p === paginaAtual ? 'active' : ''}"
+                onclick="carregarPlanos(${p})">${p}</button>`;
+        }
+
+        html += `
+            <button class="page-btn" onclick="carregarPlanos(${paginaAtual + 1})"
+                ${paginaAtual === totalPaginas ? 'disabled' : ''}>›</button>
+            <span class="page-info">Página ${paginaAtual} de ${totalPaginas}</span>`;
+
+        el.innerHTML = html;
+    }
+
+    // EDITAR
+    async function abrirEdicao(id) {
+        try {
+            const res = await fetch(`${API_URL}/planos/${id}`);
+            if (!res.ok) throw new Error("Plano não encontrado");
+            const p = await res.json();
+
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('edit-titulo').value = p.titulo || '';
+            document.getElementById('edit-disciplina').value = p.disciplina || '';
+            document.getElementById('edit-ementa').value = p.ementa || '';
+            document.getElementById('edit-objetivo').value = p.objetivo || '';
+            document.getElementById('edit-conteudo').value = p.conteudos || '';
+            document.getElementById('edit-recursos').value = p.recursos || '';
+            document.getElementById('edit-data').value = p.data_prevista || '';
+            document.getElementById('edit-tags').value = p.tags ? p.tags.join(', ') : '';
+
+            document.getElementById('modal-editar').classList.add('active');
+
+        } catch (e) {
+            showStatus("❌ Erro ao carregar plano: " + e.message, "error");
+        }
+    }
+
+    async function salvarEdicao() {
+        const id = document.getElementById('edit-id').value;
+        const titulo = document.getElementById('edit-titulo').value.trim();
+        const disciplina = document.getElementById('edit-disciplina').value.trim();
+
+        if (!titulo || !disciplina) {
+            showStatus("Título e Disciplina são obrigatórios.", "error");
+            return;
+        }
+
+        const dados = {
+            titulo,
+            disciplina,
+            ementa: document.getElementById('edit-ementa').value.trim(),
+            objetivo: document.getElementById('edit-objetivo').value.trim(),
+            conteudos: document.getElementById('edit-conteudo').value.trim(),
+            recursos: document.getElementById('edit-recursos').value.trim(),
+            data_prevista: document.getElementById('edit-data').value || null,  // ✅ null, não ''
+            tags: document.getElementById('edit-tags').value
+                .split(',').map(t => t.trim()).filter(t => t !== '')
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/planos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.erro || `Erro ${res.status}`);
+            }
+
+            fecharModal();
+            showStatus("✅ Plano atualizado com sucesso!", "success");
+            carregarPlanos(paginaAtual);
+
+        } catch (e) {
+            showStatus("❌ Erro ao editar: " + e.message, "error");
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-editar').classList.remove('active');
+    }
+
+    // Fecha modal ao clicar fora
+    document.getElementById('modal-editar').addEventListener('click', function(e) {
+        if (e.target === this) fecharModal();
+    });
+
+    // DELETAR
+    async function deletarPlano(id, titulo) {
+        if (!confirm(`Tem certeza que deseja excluir:\n"${titulo}"?\n\nEsta ação não pode ser desfeita.`)) return;
+
+        try {
+            const res = await fetch(`${API_URL}/planos/${id}`, { method: 'DELETE' });
+
+            if (res.status !== 204 && !res.ok) {
+                throw new Error(`Erro ${res.status} ao deletar`);
+            }
+
+            showStatus("✅ Plano removido com sucesso!", "success");
+            carregarPlanos(paginaAtual);
+
+        } catch (e) {
+            showStatus("❌ Erro ao excluir: " + e.message, "error");
+        }
+    }
+
+    function limparFormulario() {
+        ['ai-titulo','ai-disciplina','ai-ementa','f-objetivo',
+         'f-conteudo','f-recursos','f-tags','f-data']
+            .forEach(id => document.getElementById(id).value = '');
+    }
+
+    function showStatus(msg, tipo) {
+        const s = document.getElementById('status');
+        s.textContent = msg;
+        s.className = tipo; // 'success' ou 'error'
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        clearTimeout(window._statusTimer);
+        window._statusTimer = setTimeout(() => s.className = '', 4000);
+    }
+
+    function escapar(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function formatarData(str) {
+        if (!str) return '';
+        const [ano, mes, dia] = str.split('-');
+        if (!ano || !mes || !dia) return str;
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    // evita requisição a cada tecla digitada
+    function debounceCarregar() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => carregarPlanos(1), 400);
+    }
+
+    // Fecha modal com Escape
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') fecharModal();
+    });
+
+    // Inicializa
+    carregarPlanos(1);
+</script>
+</body>
+</html>

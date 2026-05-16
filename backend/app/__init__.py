@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_cors import CORS
 from .models import db
 from .rotas import plano_aula_bp
@@ -14,5 +14,10 @@ def create_app():
     #registrar as rotas blueprint
     app.register_blueprint(plano_aula_bp, url_prefix='/api/planos')
     app.register_blueprint(ai_bp, url_prefix='/api/ai')
+
+    @app.route('/')
+    def home():
+        return render_template('index.html')
+
 
     return app
