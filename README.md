@@ -14,7 +14,7 @@ Link direto: [https://plano-de-aula-desafio-production.up.railway.app](https://p
 
 Assista ao vídeo demonstrativo apresentando a solução desenvolvida, arquitetura, escolhas técnicas e os itens bônus implementados:
 
-▶️ **[Clique aqui para assistir ao vídeo de apresentação do projeto](LINK_DO_SEU_VIDEO_AQUI)**
+▶️ **[Clique aqui para assistir ao vídeo de apresentação do projeto](https://youtu.be/DMASLks7Ubk?si=KpeOl_HJOqlsmzBg)**
 
 
 
